@@ -11,6 +11,17 @@ from app.data.ingest import load_raw_data
 from app.data.clean import clean_data
 from app.data.features import build_feature_pipeline
 
+def get_next_model_version(model_dir):
+    existing = list(model_dir.glob("churn_model_v*.pkl"))
+    if not existing:
+        return 1
+
+    versions = [
+        int(p.stem.replace("churn_model_v", "")) for p in existing
+    ]
+    return max(versions) + 1
+
+
 MODEL_DIR = Path("app/models/artifacts")
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -54,8 +65,9 @@ def train_model():
 
     print(f"ROC-AUC: {auc:.4f}")
 
-    # Save model
-    model_path = MODEL_DIR / "churn_model_v1.pkl"
+    version = get_next_model_version(MODEL_DIR)
+    model_path = MODEL_DIR / f"churn_model_v{version}.pkl"
+
     joblib.dump(clf, model_path)
 
-    return auc, model_path
+    return auc, model_path, f"v{version}"
