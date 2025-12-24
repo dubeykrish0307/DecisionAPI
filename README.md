@@ -41,6 +41,7 @@ Client
 
 ## Project Structure
 
+```
 DecisionAPI/
 ├── app/
 │ ├── main.py
@@ -67,6 +68,7 @@ DecisionAPI/
 ├── requirements.txt
 ├── predictions.db
 └── README.md
+```
 
 
 ---
