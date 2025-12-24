@@ -1,9 +1,13 @@
+from app.monitoring.drift import detect_drift
+
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.request import ChurnPredictionRequest
 from app.schemas.response import ChurnPredictionResponse
 from app.models.registry import get_latest_model
+
+from app.core.database import SessionLocal, PredictionLog
 
 router = APIRouter()
 
@@ -33,6 +37,7 @@ def predict_churn(request: ChurnPredictionRequest):
         # Convert request to DataFrame
         input_df = pd.DataFrame([request.dict()])
         input_df = map_api_to_model_features(input_df)
+        drift_info = detect_drift(input_df)
 
 
         # Make prediction
@@ -46,11 +51,39 @@ def predict_churn(request: ChurnPredictionRequest):
         else:
             risk_level = "HIGH"
 
+
+        db = SessionLocal()
+        try:
+            log = PredictionLog(
+                gender=request.gender,
+                senior_citizen=request.senior_citizen,
+                tenure_months=request.tenure_months,
+                contract_type=request.contract_type,
+                internet_service=request.internet_service,
+                monthly_charges=request.monthly_charges,
+                total_charges=request.total_charges,
+                payment_method=request.payment_method,
+                churn_probability=round(churn_proba, 4),
+                risk_level=risk_level,
+                model_version=version,
+            )
+
+            db.add(log)
+            db.commit()
+        finally:
+            db.close()
+
+
+
         return ChurnPredictionResponse(
             churn_probability=round(churn_proba, 4),
             risk_level=risk_level,
             model_version=version
         )
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error during prediction"
+        )
+

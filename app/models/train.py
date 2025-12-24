@@ -1,3 +1,4 @@
+from app.monitoring.drift import compute_training_stats
 import joblib
 from pathlib import Path
 
@@ -28,6 +29,9 @@ def train_model():
         random_state=42,
         stratify=y
     )
+    # Compute drift baseline on training data
+    compute_training_stats(X_train)
+
 
     # Build pipeline
     feature_pipeline = build_feature_pipeline()
