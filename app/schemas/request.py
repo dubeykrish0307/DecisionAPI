@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+
 class ChurnPredictionRequest(BaseModel):
     gender: str = Field(..., example="Male")
     senior_citizen: int = Field(..., ge=0, le=1, example=0)

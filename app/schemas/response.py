@@ -5,4 +5,3 @@ class ChurnPredictionResponse(BaseModel):
     churn_probability: float
     risk_level: str
     model_version: str
-

@@ -124,7 +124,6 @@ data/raw/telco_churn.csv
 Things I found when I re-measured the project, kept here on purpose:
 
 - [ ] The drift result is computed but not yet returned in the response or stored in the log.
-- [ ] `registry.py` sorts versions as text, so `v10` would load before `v9`. Sort by the number instead.
 - [ ] `senior_citizen` is accepted and logged but not used by the model. Add it as a feature or drop it from the request.
 - [ ] Pin versions in `requirements.txt`. The saved models were trained on an older scikit-learn and print a version warning on load.
 - [ ] Add tests for `/predict` and `/retrain`, and stop committing `predictions.db`.

@@ -1,25 +1,30 @@
-import joblib
+from functools import lru_cache
 from pathlib import Path
-from typing import Tuple
+
+import joblib
 
 MODEL_DIR = Path("app/models/artifacts")
 
-def get_latest_model() -> Tuple[object, str]:
-    """
-    Load the latest version of the churn model.
-    Returns the model and its version string.
-    """
+
+def version_number(model_path: Path) -> int:
+    return int(model_path.stem.rsplit("_v", 1)[1])
+
+
+@lru_cache(maxsize=1)
+def _load(model_path: Path, modified_ns: int):
+    # modified_ns is only part of the cache key, so an overwritten file gets reloaded
+    return joblib.load(model_path)
+
+
+def get_latest_model():
+    """Return the newest churn model and its version string, e.g. "v3"."""
     if not MODEL_DIR.exists():
         raise FileNotFoundError("Model directory does not exist.")
-    
-    model_files = sorted(MODEL_DIR.glob("churn_model_v*.pkl"))
 
+    model_files = list(MODEL_DIR.glob("churn_model_v*.pkl"))
     if not model_files:
         raise FileNotFoundError("No trained models found.")
-    
-    latest_model_path = model_files[-1]
-    model = joblib.load(latest_model_path)
 
-    version = latest_model_path.stem.replace("churn_model_", "")
-
-    return model, version
+    latest = max(model_files, key=version_number)
+    model = _load(latest, latest.stat().st_mtime_ns)
+    return model, latest.stem.replace("churn_model_", "")

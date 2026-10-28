@@ -1,20 +1,12 @@
-from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 
+from sqlalchemy import Column, DateTime, Float, Integer, String, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 DATABASE_URL = "sqlite:///./predictions.db"
 
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
-)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
@@ -34,7 +26,6 @@ class PredictionLog(Base):
     churn_probability = Column(Float)
     risk_level = Column(String)
     model_version = Column(String)
-
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
